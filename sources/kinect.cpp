@@ -22,17 +22,15 @@ void drawTransparency(Mat frame, Mat transp, int xPos, int yPos){//coloquei a pa
 }
 
 void drawCapture(Mat& imagem, Mat& frame, double scale, bool tryflip){
-    Mat gray, smallImg;
+    Mat smallImg;
     
     double fx = 1 / scale;
-    resize(frame, smallImg, Size(), fx, fx, INTER_LINEAR_EXACT);
+    resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
     if(tryflip){
-        flip(smallImg, smallImg, 1);
+        flip(frame, frame, 1);
     }
-    //cvtColor(smallImg, gray, COLOR_BGR2GRAY);
-    //equalizeHist(gray, gray);
 
-    drawTransparency(imagem, smallImg, 100, 100);
+    drawTransparency(imagem, frame, 100, 100);
 }
 
 int main(int argc, const char** argv){
@@ -47,8 +45,8 @@ int main(int argc, const char** argv){
     tela.background = imread("imagens/background720.png", IMREAD_UNCHANGED);
     cvtColor(tela.background, tela.background, COLOR_BGRA2BGR);
 
-    Mat orange = imread("imagens/orange.png", IMREAD_UNCHANGED);
-    
+    Mat orange1 = imread("imagens/orange.png", IMREAD_UNCHANGED);
+    Mat orange2;
 
     //---------------------------------------------------------------
     VideoCapture capture;
@@ -70,14 +68,29 @@ int main(int argc, const char** argv){
         tela.imagem = tela.background;
 
         if(!frame.empty()){
+            double fx = 1 / scale;
+            resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
             //drawCapture(tela.imagem, frame, scale, tryflip);//esta sem a captura de rostos
-            tela.imagem = frame;
-            drawTransparency(tela.imagem, orange, 100, 100);
+            //tela.imagem = frame;
+
+            /*cout << "camera: " << frame.type() << endl;
+            cout << "background: " << tela.background.type() << endl;
+            cout << "imagem: " << tela.imagem.type() << endl;*/
+
+            if(frame.empty())
+                cout << "Frame empty\n";
+            if(tela.imagem.empty())
+                cout << "Imagem empty\n";
+
+            cout << "Cheguei aqui1\n";
+            drawTransparency(tela.imagem, frame, 100, 50);//nao faco ideia do pq n consigo desenhar o frame em cima da imagem
             //tela.imagem = orange;
         }
 
-        //drawTransparency(tela.imagem, orange, 100, 100);
+        //resize(orange1, orange2, Size(), 2, 2, INTER_LINEAR_EXACT);        
+        //drawTransparency(tela.imagem, orange2, 100, 100);
 
+        cout << "Cheguei aqui2\n";
         imshow("result", tela.imagem);
         
         cout << tela.imagem.cols << " x " << tela.imagem.rows << endl;
