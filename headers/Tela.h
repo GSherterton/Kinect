@@ -9,4 +9,6 @@ using namespace cv;
 class Tela{
     public:
         Mat background;
+        int resolucao[2];
+        Mat imagem;
 };

@@ -10,6 +10,31 @@ void detectAndDraw(Mat& img, CascadeClassifier& cascade, double scale, bool tryf
 
 string cascadeName;
 
+void drawTransparency(Mat frame, Mat transp, int xPos, int yPos){//coloquei a passagem de parametro por referencia
+    Mat mask;
+    vector<Mat> layers;
+
+    split(transp, layers); // seperate channels
+    Mat rgb[3] = { layers[0],layers[1],layers[2] };
+    mask = layers[3]; // png's alpha channel used as mask
+    merge(rgb, 3, transp);  // put together the RGB channels, now transp insn't transparent 
+    transp.copyTo(frame.rowRange(yPos, yPos + transp.rows).colRange(xPos, xPos + transp.cols), mask);
+}
+
+void drawCapture(Mat& imagem, Mat& frame, double scale, bool tryflip){
+    Mat gray, smallImg;
+    
+    double fx = 1 / scale;
+    resize(frame, smallImg, Size(), fx, fx, INTER_LINEAR_EXACT);
+    if(tryflip){
+        flip(smallImg, smallImg, 1);
+    }
+    //cvtColor(smallImg, gray, COLOR_BGR2GRAY);
+    //equalizeHist(gray, gray);
+
+    drawTransparency(imagem, smallImg, 100, 100);
+}
+
 int main(int argc, const char** argv){
     //fazer rodar as pastas certinho //check
     //desenhar um fundo base         //check
@@ -18,14 +43,61 @@ int main(int argc, const char** argv){
     int resolucao[2] = {1920, 1080};
     Camera camera;
     Tela tela;
-    tela.background = imread("imagens/background.png", IMREAD_UNCHANGED);
+
+    tela.background = imread("imagens/background720.png", IMREAD_UNCHANGED);
+    cvtColor(tela.background, tela.background, COLOR_BGRA2BGR);
+
+    Mat orange = imread("imagens/orange.png", IMREAD_UNCHANGED);
+    
+
+    //---------------------------------------------------------------
+    VideoCapture capture;
+    Mat frame;
+    bool tryflip;
+    CascadeClassifier cascade;
+    double scale;
+
+    cascadeName = "haarcascade_frontalface_default.xml";
+    scale = 2; // usar 1, 2, 4.
+    if (scale < 1)
+        scale = 1;
+    tryflip = true;
+    //---------------------------------------------------------------
 
     while (1){
-        imshow("result", tela.background);
+        capture.read(frame);
 
-        char c = (char)waitKey(10);
-        if( c == 27 || c == 'q' || c == 'Q' )
+        tela.imagem = tela.background;
+
+        if(!frame.empty()){
+            //drawCapture(tela.imagem, frame, scale, tryflip);//esta sem a captura de rostos
+            tela.imagem = frame;
+            drawTransparency(tela.imagem, orange, 100, 100);
+            //tela.imagem = orange;
+        }
+
+        //drawTransparency(tela.imagem, orange, 100, 100);
+
+        imshow("result", tela.imagem);
+        
+        cout << tela.imagem.cols << " x " << tela.imagem.rows << endl;
+
+        char c = (char)waitKey(100);
+        if(c == 27 || c == 'q'){//quit
             break;
+        }else if(c == 'c'){//capture
+            if(!capture.open(0)){
+                cout << "Capture from camera #0 didn't work" << endl;
+                return 1;
+            }
+
+            cout << "Ativei a camera\n";
+        }else if(c == 's'){//stop
+            cout << "Tentei fechar a camera\n";
+            if(capture.isOpened()){
+                capture.release();
+            }
+        }
     }
 
     /*
@@ -81,7 +153,7 @@ int main(int argc, const char** argv){
  * @param xPos x position of the frame image where the image will start.
  * @param yPos y position of the frame image where the image will start.
  */
-void drawTransparency(Mat frame, Mat transp, int xPos, int yPos) {
+/*void drawTransparency(Mat frame, Mat transp, int xPos, int yPos) {
     Mat mask;
     vector<Mat> layers;
 
@@ -90,7 +162,7 @@ void drawTransparency(Mat frame, Mat transp, int xPos, int yPos) {
     mask = layers[3]; // png's alpha channel used as mask
     merge(rgb, 3, transp);  // put together the RGB channels, now transp insn't transparent 
     transp.copyTo(frame.rowRange(yPos, yPos + transp.rows).colRange(xPos, xPos + transp.cols), mask);
-}
+}*/
 
 /**
  * @brief Draws a transparent rect over a frame Mat.
@@ -154,6 +226,6 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade, double scale, bool try
     putText	(smallImg, "Placar:", Point(300, 50), FONT_HERSHEY_PLAIN, 2, color); // fonte
 
     // Desenha o frame na tela
-    imshow("result", smallImg );
+    imshow("result", smallImg);
     printf("image::width: %d, height=%d\n", smallImg.cols, smallImg.rows );
 }
