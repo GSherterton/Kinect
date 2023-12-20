@@ -11,8 +11,9 @@ void detectAndDraw(Mat& img, CascadeClassifier& cascade, double scale, bool tryf
 string cascadeName;
 
 int main(int argc, const char** argv){
-    //fazer rodar as pastas certinho
-    //desenhar um fundo base
+    //fazer rodar as pastas certinho //check
+    //desenhar um fundo base         //check
+    //fazer com que o fundo base inicial seja na resolucao 720p
     //desenhar a camera centralizada embaixo
     int resolucao[2] = {1920, 1080};
     Camera camera;
