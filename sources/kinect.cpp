@@ -21,8 +21,8 @@ void drawTransparency(Mat frame, Mat transp, int xPos, int yPos){//coloquei a pa
     transp.copyTo(frame.rowRange(yPos, yPos + transp.rows).colRange(xPos, xPos + transp.cols), mask);
 }
 
-void drawCapture(Mat& imagem, Mat& frame, double scale, bool tryflip){
-    Mat smallImg;
+void drawCapture(Mat imagem, Mat frame, double scale, bool tryflip){
+    //Mat smallImg;
     
     double fx = 1 / scale;
     resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
@@ -30,7 +30,7 @@ void drawCapture(Mat& imagem, Mat& frame, double scale, bool tryflip){
         flip(frame, frame, 1);
     }
 
-    drawTransparency(imagem, frame, 100, 100);
+    frame.copyTo(imagem(Range(0, 0+frame.rows), Range(0, 0+frame.cols)));
 }
 
 int main(int argc, const char** argv){
@@ -44,9 +44,10 @@ int main(int argc, const char** argv){
 
     tela.background = imread("imagens/background720.png", IMREAD_UNCHANGED);
     cvtColor(tela.background, tela.background, COLOR_BGRA2BGR);
+    //resize(tela.background, tela.background, Size(), 0.5, 0.5, INTER_LINEAR_EXACT);
 
-    Mat orange1 = imread("imagens/orange.png", IMREAD_UNCHANGED);
-    Mat orange2;
+
+    Mat orange = imread("imagens/orange.png", IMREAD_UNCHANGED);
 
     //---------------------------------------------------------------
     VideoCapture capture;
@@ -64,14 +65,20 @@ int main(int argc, const char** argv){
 
     while (1){
         capture.read(frame);
+        
+        tela.imagem = tela.background.clone();
 
-        tela.imagem = tela.background;
+        //double fx = 1 / scale;
+        //resize(tela.imagem, tela.imagem, Size(), fx, fx, Ç);
 
         if(!frame.empty()){
-            double fx = 1 / scale;
-            resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
-            //drawCapture(tela.imagem, frame, scale, tryflip);//esta sem a captura de rostos
+            //double fx = 1 / scale;
+            //resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
+            drawCapture(tela.imagem, frame, scale, tryflip);//esta sem a captura de rostos
             //tela.imagem = frame;
+
+            //drawTransparency(tela.imagem, frame, 0, 0);
+            //frame.copyTo(tela.imagem(Range(0, 0+frame.rows), Range(0, 0+frame.cols)));
 
             /*cout << "camera: " << frame.type() << endl;
             cout << "background: " << tela.background.type() << endl;
@@ -83,14 +90,18 @@ int main(int argc, const char** argv){
                 cout << "Imagem empty\n";
 
             cout << "Cheguei aqui1\n";
-            drawTransparency(tela.imagem, frame, 100, 50);//nao faco ideia do pq n consigo desenhar o frame em cima da imagem
+            //drawTransparency(tela.imagem, frame, 100, 50);//nao faco ideia do pq n consigo desenhar o frame em cima da imagem
             //tela.imagem = orange;
+            drawTransparency(tela.imagem, orange, 50, 50);
         }
 
         //resize(orange1, orange2, Size(), 2, 2, INTER_LINEAR_EXACT);        
-        //drawTransparency(tela.imagem, orange2, 100, 100);
+        drawTransparency(tela.imagem, orange, 100, 100);
+
+        //orange.copyTo(tela.imagem(Range(100, 100+orange.rows), Range(100, 100+orange.cols)));
 
         cout << "Cheguei aqui2\n";
+
         imshow("result", tela.imagem);
         
         cout << tela.imagem.cols << " x " << tela.imagem.rows << endl;
@@ -105,7 +116,7 @@ int main(int argc, const char** argv){
             }
 
             cout << "Ativei a camera\n";
-        }else if(c == 's'){//stop
+        }else if(c == 's'){//stop 
             cout << "Tentei fechar a camera\n";
             if(capture.isOpened()){
                 capture.release();
