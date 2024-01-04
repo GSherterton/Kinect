@@ -22,8 +22,6 @@ void drawTransparency(Mat frame, Mat transp, int xPos, int yPos){//coloquei a pa
 }
 
 void drawCapture(Mat imagem, Mat frame, double scale, bool tryflip){
-    //Mat smallImg;
-    
     double fx = 1 / scale;
     resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
     if(tryflip){
@@ -38,14 +36,19 @@ int main(int argc, const char** argv){
     //desenhar um fundo base         //check
     //fazer com que o fundo base inicial seja na resolucao 720p
     //desenhar a camera centralizada embaixo
-    int resolucao[2] = {1920, 1080};
     Camera camera;
     Tela tela;
 
+    //configuracoes inicais da tela
+    tela.resolucao[0] = 1280;
+    tela.resolucao[1] = 720;
     tela.background = imread("imagens/background720.png", IMREAD_UNCHANGED);
     cvtColor(tela.background, tela.background, COLOR_BGRA2BGR);
     //resize(tela.background, tela.background, Size(), 0.5, 0.5, INTER_LINEAR_EXACT);
 
+
+    //configuracoes inicais da camera
+    camera.scale = (camera.resolucao[1]/tela.resolucao[1]) * 4;//3 nesse caso é o fator 
 
     Mat orange = imread("imagens/orange.png", IMREAD_UNCHANGED);
 
@@ -57,19 +60,26 @@ int main(int argc, const char** argv){
     double scale;
 
     cascadeName = "haarcascade_frontalface_default.xml";
-    scale = 2; // usar 1, 2, 4.
+    scale = 3; // usar 1, 2, 4.
     if (scale < 1)
         scale = 1;
     tryflip = true;
     //---------------------------------------------------------------
 
+    cout << camera.scale << endl;
+    cout << camera.resolucao[0] << " x " << camera.resolucao[1] << endl;
+    waitKey(1000);  
+
     while (1){
-        capture.read(frame);
+        //capture.read(frame);
+        capture.read(camera.frame);
         
         tela.imagem = tela.background.clone();
 
         //double fx = 1 / scale;
         //resize(tela.imagem, tela.imagem, Size(), fx, fx, Ç);
+
+        camera.drawCapture(tela.imagem);
 
         if(!frame.empty()){
             //double fx = 1 / scale;
@@ -84,15 +94,10 @@ int main(int argc, const char** argv){
             cout << "background: " << tela.background.type() << endl;
             cout << "imagem: " << tela.imagem.type() << endl;*/
 
-            if(frame.empty())
-                cout << "Frame empty\n";
-            if(tela.imagem.empty())
-                cout << "Imagem empty\n";
-
             cout << "Cheguei aqui1\n";
             //drawTransparency(tela.imagem, frame, 100, 50);//nao faco ideia do pq n consigo desenhar o frame em cima da imagem
             //tela.imagem = orange;
-            drawTransparency(tela.imagem, orange, 50, 50);
+            //drawTransparency(tela.imagem, orange, 50, 50);
         }
 
         //resize(orange1, orange2, Size(), 2, 2, INTER_LINEAR_EXACT);        
@@ -116,7 +121,7 @@ int main(int argc, const char** argv){
             }
 
             cout << "Ativei a camera\n";
-        }else if(c == 's'){//stop 
+        }else if(c == 's'){//stop
             cout << "Tentei fechar a camera\n";
             if(capture.isOpened()){
                 capture.release();
