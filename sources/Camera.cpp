@@ -29,8 +29,10 @@ Camera::Camera(int telaResolucao){
 
 void Camera::drawCapture(Mat imagem, Mouse& mouse){
     if(!frame.empty()){
+        resize(frame, frame, Size(), 0.5, 0.5, INTER_LINEAR_EXACT);
         mouse.detectAndDisplay(frame);
-        double fx = 1 / scale;
+        
+        double fx = 2 / scale;
         resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
         if(tryflip){
             flip(frame, frame, 1);
