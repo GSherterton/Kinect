@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Camera::Camera(){
+Camera::Camera(int telaResolucao){
     tryflip = 1;
     VideoCapture capture;
     Mat frame;
@@ -23,16 +23,24 @@ Camera::Camera(){
             capture.release();
         }
     }
+
+    scale = (resolucao[1]/telaResolucao) * 6;//o ultimo numero eh o fator de conversao
 }
 
-void Camera::drawCapture(Mat imagem){
+void Camera::drawCapture(Mat imagem, Mouse& mouse){
     if(!frame.empty()){
+        mouse.detectAndDisplay(frame);
         double fx = 1 / scale;
         resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
         if(tryflip){
             flip(frame, frame, 1);
         }
 
-        frame.copyTo(imagem(Range(0, 0+frame.rows), Range(0, 0+frame.cols)));//depois ver se precisa subtrair 1
+        int posicaoX = (imagem.cols/2) - (frame.cols/2);
+        int posicaoY = (imagem.rows-frame.rows);
+
+        //mouse.detectAndDisplay(frame);
+    
+        frame.copyTo(imagem(Range(posicaoY, posicaoY+frame.rows), Range(posicaoX, posicaoX+frame.cols)));//depois ver se precisa subtrair 1
     }
 }

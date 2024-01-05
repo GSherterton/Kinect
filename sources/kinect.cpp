@@ -1,14 +1,13 @@
 #include <opencv2/opencv.hpp>
 #include "Camera.h"
 #include "Tela.h"
+#include "Mouse.h"
 #include <iostream>
 
 using namespace std;
 using namespace cv;
 
 void detectAndDraw(Mat& img, CascadeClassifier& cascade, double scale, bool tryflip);
-
-string cascadeName;
 
 void drawTransparency(Mat frame, Mat transp, int xPos, int yPos){//coloquei a passagem de parametro por referencia
     Mat mask;
@@ -34,76 +33,60 @@ void drawCapture(Mat imagem, Mat frame, double scale, bool tryflip){
 int main(int argc, const char** argv){
     //fazer rodar as pastas certinho //check
     //desenhar um fundo base         //check
-    //fazer com que o fundo base inicial seja na resolucao 720p
+    //fazer com que o fundo base inicial seja na resolucao 720p //check
     //desenhar a camera centralizada embaixo
-    Camera camera;
     Tela tela;
-
-    //configuracoes inicais da tela
-    tela.resolucao[0] = 1280;
-    tela.resolucao[1] = 720;
-    tela.background = imread("imagens/background720.png", IMREAD_UNCHANGED);
-    cvtColor(tela.background, tela.background, COLOR_BGRA2BGR);
-    //resize(tela.background, tela.background, Size(), 0.5, 0.5, INTER_LINEAR_EXACT);
-
-
-    //configuracoes inicais da camera
-    camera.scale = (camera.resolucao[1]/tela.resolucao[1]) * 4;//3 nesse caso é o fator 
+    Camera camera = Camera(tela.resolucao[1]);
 
     Mat orange = imread("imagens/orange.png", IMREAD_UNCHANGED);
+    //resize(orange, orange, Size(), 2, 2, INTER_LINEAR_EXACT);//so um teste
 
     //---------------------------------------------------------------
     VideoCapture capture;
-    Mat frame;
-    bool tryflip;
-    CascadeClassifier cascade;
-    double scale;
+    
+    //CascadeClassifier cascade;
+    //string cascadeName;
+    //cascadeName = "haarcascade_frontalface_default.xml";
 
-    cascadeName = "haarcascade_frontalface_default.xml";
-    scale = 3; // usar 1, 2, 4.
-    if (scale < 1)
-        scale = 1;
-    tryflip = true;
-    //---------------------------------------------------------------
+    /*string fistCascadeName = "cascades/fist.xml";
+    string leftCascadeName = "cascades/left.xml";
+    string lpalmCascadeName = "cascades/lpalm.xml";
+    string rightCascadeName = "cascades/right.xml";
+    string rpalmCascadeName = "cascades/rpalm.xml";*/
 
-    cout << camera.scale << endl;
-    cout << camera.resolucao[0] << " x " << camera.resolucao[1] << endl;
-    waitKey(1000);  
+    /*if(!cascade.load(fistCascadeName)){
+        cout << "ERROR: Could not load classifier cascade: " << fistCascadeName << endl;
+        return -1;
+    }
+
+    if(!cascade.load(leftCascadeName)){
+        cout << "ERROR: Could not load classifier cascade: " << leftCascadeName << endl;
+        return -1;
+    }
+
+    if(!cascade.load(lpalmCascadeName)){
+        cout << "ERROR: Could not load classifier cascade: " << lpalmCascadeName << endl;
+        return -1;
+    }
+
+    if(!cascade.load(rightCascadeName)){
+        cout << "ERROR: Could not load classifier cascade: " << rightCascadeName << endl;
+        return -1;
+    }
+
+    if(!cascade.load(rpalmCascadeName)){
+        cout << "ERROR: Could not load classifier cascade: " << rpalmCascadeName << endl;
+        return -1;
+    }*/
 
     while (1){
-        //capture.read(frame);
         capture.read(camera.frame);
         
         tela.imagem = tela.background.clone();
 
-        //double fx = 1 / scale;
-        //resize(tela.imagem, tela.imagem, Size(), fx, fx, Ç);
+        camera.drawCapture(tela.imagem, tela.mouse);//deixei a funcao passando o mouse como parametro apenas por inicio
 
-        camera.drawCapture(tela.imagem);
-
-        if(!frame.empty()){
-            //double fx = 1 / scale;
-            //resize(frame, frame, Size(), fx, fx, INTER_LINEAR_EXACT);
-            drawCapture(tela.imagem, frame, scale, tryflip);//esta sem a captura de rostos
-            //tela.imagem = frame;
-
-            //drawTransparency(tela.imagem, frame, 0, 0);
-            //frame.copyTo(tela.imagem(Range(0, 0+frame.rows), Range(0, 0+frame.cols)));
-
-            /*cout << "camera: " << frame.type() << endl;
-            cout << "background: " << tela.background.type() << endl;
-            cout << "imagem: " << tela.imagem.type() << endl;*/
-
-            cout << "Cheguei aqui1\n";
-            //drawTransparency(tela.imagem, frame, 100, 50);//nao faco ideia do pq n consigo desenhar o frame em cima da imagem
-            //tela.imagem = orange;
-            //drawTransparency(tela.imagem, orange, 50, 50);
-        }
-
-        //resize(orange1, orange2, Size(), 2, 2, INTER_LINEAR_EXACT);        
-        drawTransparency(tela.imagem, orange, 100, 100);
-
-        //orange.copyTo(tela.imagem(Range(100, 100+orange.rows), Range(100, 100+orange.cols)));
+        //drawTransparency(tela.imagem, orange, 100, 100);
 
         cout << "Cheguei aqui2\n";
 

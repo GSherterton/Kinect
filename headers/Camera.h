@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <opencv2/opencv.hpp>
+#include "Mouse.h"
 
 using namespace std;
 using namespace cv;
@@ -14,6 +15,6 @@ class Camera{
         Mat frame;
         
 
-        Camera();
-        void drawCapture(Mat imagem);
+        Camera(int telaResolucao);
+        void drawCapture(Mat imagem, Mouse& mouse);
 };
